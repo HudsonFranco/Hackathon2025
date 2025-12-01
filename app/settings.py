@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    'corsheaders',
+    
 ]
 
 MIDDLEWARE = [
@@ -44,11 +44,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://hackathon2025-gules.vercel.app",
-]
 
-CORS_ALLOW_CREDENTIALS = True
 
 
 ROOT_URLCONF = 'app.urls'
