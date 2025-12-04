@@ -2,8 +2,14 @@
 set -e
 
 # Se DATABASE_URL estiver definida (Render), não precisa aguardar db separado
-if [ -z "$DATABASE_URL" ]; then
-  echo "Aguardando PostgreSQL estar pronto..."
+if [ -n "$DATABASE_URL" ]; then
+  echo "Usando DATABASE_URL configurada (Render/Produção)"
+  # No Render, o banco já está pronto, não precisa aguardar
+elif [ -n "$POSTGRES_HOST" ] && [ "$POSTGRES_HOST" != "db" ]; then
+  echo "PostgreSQL configurado via variáveis de ambiente"
+  # Host customizado, não tenta conectar ao 'db'
+else
+  echo "Aguardando PostgreSQL estar pronto (docker-compose)..."
   # Aguarda até 60 segundos (30 tentativas x 2 segundos)
   max_attempts=30
   attempt=0
@@ -13,16 +19,15 @@ if [ -z "$DATABASE_URL" ]; then
       break
     fi
     attempt=$((attempt + 1))
-    echo "PostgreSQL não está pronto ainda. Aguardando... ($attempt/$max_attempts)"
+    if [ $((attempt % 5)) -eq 0 ]; then
+      echo "PostgreSQL não está pronto ainda. Aguardando... ($attempt/$max_attempts)"
+    fi
     sleep 2
   done
   
   if [ $attempt -eq $max_attempts ]; then
     echo "AVISO: PostgreSQL não respondeu após 60 segundos. Continuando mesmo assim..."
   fi
-else
-  echo "Usando DATABASE_URL configurada (Render/Produção)"
-  # No Render, o banco já está pronto, não precisa aguardar
 fi
 
 echo "Executando migrações..."
