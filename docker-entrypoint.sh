@@ -3,11 +3,8 @@ set -e
 
 # Se DATABASE_URL estiver definida (Render), não precisa aguardar db separado
 if [ -n "$DATABASE_URL" ]; then
-  echo "Usando DATABASE_URL configurada (Render/Produção)"
+  echo "Usando DATABASE_URL configurada (Render/Produção) - pulando verificação de PostgreSQL"
   # No Render, o banco já está pronto, não precisa aguardar
-elif [ -n "$POSTGRES_HOST" ] && [ "$POSTGRES_HOST" != "db" ]; then
-  echo "PostgreSQL configurado via variáveis de ambiente"
-  # Host customizado, não tenta conectar ao 'db'
 else
   echo "Aguardando PostgreSQL estar pronto (docker-compose)..."
   # Aguarda até 60 segundos (30 tentativas x 2 segundos)
