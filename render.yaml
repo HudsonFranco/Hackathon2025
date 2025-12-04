@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: hakaton-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hakaton-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+    healthCheckPath: /admin/
+
+databases:
+  - name: hakaton-db
+    databaseName: hakaton_db
+    user: hakaton_user
+    plan: free
+
