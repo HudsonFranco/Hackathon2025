@@ -4,13 +4,25 @@ set -e
 # Se DATABASE_URL estiver definida (Render), não precisa aguardar db separado
 if [ -z "$DATABASE_URL" ]; then
   echo "Aguardando PostgreSQL estar pronto..."
-  while ! pg_isready -h db -U ${POSTGRES_USER:-hakaton_user} -d ${POSTGRES_DB:-hakaton_db}; do
-    echo "PostgreSQL não está pronto ainda. Aguardando..."
+  # Aguarda até 60 segundos (30 tentativas x 2 segundos)
+  max_attempts=30
+  attempt=0
+  while [ $attempt -lt $max_attempts ]; do
+    if pg_isready -h db -U ${POSTGRES_USER:-hakaton_user} -d ${POSTGRES_DB:-hakaton_db} 2>/dev/null; then
+      echo "PostgreSQL está pronto!"
+      break
+    fi
+    attempt=$((attempt + 1))
+    echo "PostgreSQL não está pronto ainda. Aguardando... ($attempt/$max_attempts)"
     sleep 2
   done
-  echo "PostgreSQL está pronto!"
+  
+  if [ $attempt -eq $max_attempts ]; then
+    echo "AVISO: PostgreSQL não respondeu após 60 segundos. Continuando mesmo assim..."
+  fi
 else
-  echo "Usando DATABASE_URL configurada (Render)"
+  echo "Usando DATABASE_URL configurada (Render/Produção)"
+  # No Render, o banco já está pronto, não precisa aguardar
 fi
 
 echo "Executando migrações..."
